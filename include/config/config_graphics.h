@@ -10,7 +10,7 @@
  * This only works on real console or LLE emulators like ares or ParaLLEl. It
  * will not work on legacy HLE emulators such as Project64.
 */
-#define ENABLE_F3DEX3 true
+#define ENABLE_F3DEX3 false
 // Remove usually-unnecessary syncs from texture loading commands. Only matters
 // for vanilla display lists--new ones exported from fast64 already have the
 // syncs removed. This is buggy (graphical issues / crashes) as some vanilla DLs
