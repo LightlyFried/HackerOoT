@@ -40,7 +40,7 @@ DEBUG_OBJECTS ?= 0
 # In nearly all cases, not having 'mips-linux-gnu-*' binaries on the PATH indicates missing dependencies.
 MIPS_BINUTILS_PREFIX ?= mips-linux-gnu-
 # Emulator w/ flags for 'make run'.
-N64_EMULATOR ?=
+N64_EMULATOR ?= "/mnt/c/Program Files (x86)/parallel-launcher/parallel-launcher.exe"
 # Set to override game region in the ROM header (options: JP, US, EU). This can be used to build a fake US version
 # of the debug ROM for better emulator compatibility, or to build US versions of NTSC N64 ROMs.
 REGION ?= US
@@ -233,7 +233,7 @@ else
 endif
 ASOPTFLAGS := -O1
 
-OPTFLAGS += -ffast-math -fno-unsafe-math-optimizations
+OPTFLAGS += -ffast-math -fno-unsafe-math-optimizations -Wno-shift-negative-value
 
 ifeq ($(OS),Windows_NT)
     DETECTED_OS=windows
