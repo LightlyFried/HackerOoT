@@ -50,7 +50,7 @@ endif
 ifeq ($(origin PACKAGE_NAME), undefined)
   PACKAGE_NAME := "$(shell git log -1 --pretty=%s | tr -d '()`"\n' | tr -d "'" | sed 's/\"/\\\"/g')"
   ifeq ($(PACKAGE_NAME),"")
-    PACKAGE_NAME := "Unknown name"
+    PACKAGE_NAME := "Echoed Melody"
   endif
 endif
 
