@@ -6,6 +6,8 @@
 #include "inventory.h"
 #include "z_math.h"
 
+#include "em_save.h"
+
 typedef enum ZTargetSetting {
     /* 0 */ Z_TARGET_SETTING_SWITCH,
     /* 1 */ Z_TARGET_SETTING_HOLD
@@ -285,6 +287,7 @@ typedef struct Save {
     /* 0x14 */ s32 totalDays;
     /* 0x18 */ s32 bgsDayCount; // increments with totalDays, can be cleared with `Environment_ClearBgsDayCount`
     /* 0x1C */ SaveInfo info; // "information"
+    /*  EM  */ EmSaveInfo emSaveInfo; // Flags are stored in `em_save.h`
     u8 useWidescreen;
 } Save;
 
@@ -326,6 +329,8 @@ typedef struct SaveContext {
     /* 0x13F4 */ s16 magicCapacity; // maximum magic available
     /* 0x13F6 */ s16 magicFillTarget; // target used to fill magic. Target can either be full capacity (Magic_Fill, magic upgrades), or the saved magic amount (loading a file, game over)
     /* 0x13F8 */ s16 magicTarget; // target for magic to step to when adding or consuming magic
+    /* [ EM ] */ s16 magicRechargeTarget; // target for magic to step to when recharging after idle
+    /* [ EM ] */ s16 magicRechargeCountdown; // number of frames until magic recharge starts
     /* 0x13FA */ u16 eventInf[4]; // "event_inf"
     /* 0x1402 */ u16 mapIndex; // intended for maps/minimaps but commonly used as the dungeon index
     /* 0x1404 */ u16 minigameState;
