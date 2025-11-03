@@ -1126,6 +1126,8 @@ endseg
 #include "overlays_gc.inc"
 #endif
 
+#include "em_overlays.inc"
+
 beginseg
     name "gameplay_keep"
     compress
@@ -4200,6 +4202,8 @@ beginseg
     number 6
 endseg
 
+#include "em_objects.inc"
+
 beginseg
     name "g_pn_01"
     compress
@@ -5078,6 +5082,8 @@ beginseg
     include "$(BUILD_DIR)/assets/textures/backgrounds/vr_FCVR_pal_static.o"
 endseg
 
+#include "em_assets.inc"
+
 beginseg
     name "elf_message_field"
     compress
@@ -5127,3 +5133,5 @@ endseg
 #if TESTSUITE_MODE
 #include "testsuite.inc"
 #endif
+
+#include "em_scenes.inc"
