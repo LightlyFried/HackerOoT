@@ -2851,6 +2851,8 @@ void Magic_Update(PlayState* play) {
         case MAGIC_STATE_CONSUME_SETUP:
             // Sets the speed at which magic border flashes
             sMagicBorderRatio = 2;
+            gSaveContext.magicRechargeTarget = gSaveContext.save.info.playerData.magic; // Set up recharge target for idle MP recharge
+            gSaveContext.magicRechargeCountdown = 80; // @todo: Un-hardcode and allow for ring to set variable cooldown start time
             gSaveContext.magicState = MAGIC_STATE_CONSUME;
             break;
 
@@ -2971,6 +2973,7 @@ void Magic_Update(PlayState* play) {
                     sMagicBorderStep = 0;
                 }
             }
+            gSaveContext.magicRechargeTarget = 0; // @todo: Consider a minimum mana value in case spells are required for puzzles
             break;
 
         case MAGIC_STATE_ADD:
@@ -2982,10 +2985,20 @@ void Magic_Update(PlayState* play) {
                 gSaveContext.magicState = gSaveContext.prevMagicState;
                 gSaveContext.prevMagicState = MAGIC_STATE_IDLE;
             }
+            gSaveContext.magicRechargeTarget = 0; // @todo: Consider a minimum mana value in case spells are required for puzzles
             break;
 
         default:
             gSaveContext.magicState = MAGIC_STATE_IDLE;
+            if(gSaveContext.magicRechargeTarget > gSaveContext.save.info.playerData.magic) {
+                if(gSaveContext.magicRechargeCountdown > 0) {
+                    DECR(gSaveContext.magicRechargeCountdown);
+                } else {
+                    gSaveContext.save.info.playerData.magic += 1; // @todo: Un-hardcode and allow for ring to set variable charge speed
+                    // If we're here the countdown has already procced at least once, so we can just reset it to the charge 'tick' time
+                    gSaveContext.magicRechargeCountdown = 5; // @todo: Un-hardcode and allow for ring to set variable charge speed
+                }
+            }
             break;
     }
 }
@@ -3081,6 +3094,27 @@ void Magic_DrawMeter(PlayState* play) {
                 gSPTextureRectangle(OVERLAY_DISP++, posX << 2, (magicMeterY + 3) << 2, posRx << 2,
                                     (magicMeterY + 10) << 2, G_TX_RENDERTILE, 0, 0, WIDE_DIV((1 << 10), WIDE_GET_RATIO),
                                     1 << 10);
+            }
+
+            // Draw the recharge target
+            if(gSaveContext.magicRechargeTarget > gSaveContext.save.info.playerData.magic) {
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 172, 180, 255, interfaceCtx->magicAlpha);
+
+                gDPLoadMultiBlock_4b(OVERLAY_DISP++, gMagicMeterFillTex, 0x0000, G_TX_RENDERTILE, G_IM_FMT_I, 16, 16, 0,
+                                    G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
+                                    G_TX_NOLOD, G_TX_NOLOD);
+
+                // TODO: find something better
+                {
+                    s16 rechargePosXLeft =
+                        WIDE_MULT(WIDE_INCR((R_MAGIC_FILL_X + gSaveContext.save.info.playerData.magic), 1), WIDE_GET_RATIO);
+                    s16 rechargePosXRight =
+                        WIDE_MULT(WIDE_INCR((R_MAGIC_FILL_X + gSaveContext.magicRechargeTarget), 1), WIDE_GET_RATIO);
+
+                    gSPTextureRectangle(OVERLAY_DISP++, rechargePosXLeft << 2, (magicMeterY + 3) << 2, rechargePosXRight << 2,
+                                        (magicMeterY + 10) << 2, G_TX_RENDERTILE, 0, 0, WIDE_DIV((1 << 10), WIDE_GET_RATIO),
+                                        1 << 10);
+                }
             }
         }
     }

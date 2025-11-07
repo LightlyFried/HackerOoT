@@ -16,6 +16,8 @@
 #include "overlays/actors/ovl_En_Insect/z_en_insect.h"
 #include "overlays/effects/ovl_Effect_Ss_Fhg_Flash/z_eff_ss_fhg_flash.h"
 
+#include "overlays/actors/ovl_em_spell_projectile/z_em_spell_projectile.h"
+
 #include "libc64/qrand.h"
 #include "libu64/debug.h"
 #include "array_count.h"
@@ -363,6 +365,8 @@ void Player_Action_HookshotFly(Player* this, PlayState* play);
 void Player_Action_80850C68(Player* this, PlayState* play);
 void Player_Action_80850E84(Player* this, PlayState* play);
 void Player_Action_CsAction(Player* this, PlayState* play);
+
+void EmPlayer_TryCastSpell(Player* this, PlayState* play, u8 spellIndex);
 
 // .bss part 1
 
@@ -3554,6 +3558,18 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 // Prevent some items from being used if player is out of ammo.
                 // Also prevent explosives from being used if there are 3 or more active (outside of bombchu bowling)
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            } else if (itemAction == PLAYER_IA_NAYRUS_LOVE) {
+                // TEMP FOR MAGIC SPELLS
+                EmPlayer_TryCastSpell(this, play, EM_SPELL_SLOW_BALL);
+
+            } else if (itemAction == PLAYER_IA_FARORES_WIND) {
+                // TEMP FOR MAGIC SPELLS
+                EmPlayer_TryCastSpell(this, play, EM_SPELL_BOLT);
+
+            } else if (itemAction == PLAYER_IA_DINS_FIRE) {
+                // TEMP FOR MAGIC SPELLS
+                EmPlayer_TryCastSpell(this, play, EM_SPELL_LOBBED);
+
             } else if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
                 // Handle Lens of Truth
                 if (Magic_RequestChange(play, 0, MAGIC_CONSUME_LENS)) {
@@ -16386,5 +16402,21 @@ void Player_StartTalking(PlayState* play, Actor* actor) {
     if ((this->naviActor == this->talkActor) && ((this->talkActor->textId & 0xFF00) != 0x200)) {
         this->naviActor->flags |= ACTOR_FLAG_TALK;
         Player_SetTurnAroundCamera(play, CAM_ITEM_TYPE_11);
+    }
+}
+
+
+void EmPlayer_TryCastSpell(Player* this, PlayState* play, u8 spellIndex) {
+
+    f32 offsetY = this->actor.world.pos.y;
+    offsetY += 30.0f;
+
+    s16 spellParams = spellIndex;
+    s32 success = Magic_RequestChange(play, 16, MAGIC_CONSUME_NOW);
+
+    if (success) {
+
+        /*Actor* spawnedActor;
+        spawnedActor = */Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EM_SPELL_PROJECTILE, this->actor.world.pos.x, offsetY, this->actor.world.pos.z, 0, this->actor.shape.rot.y, 0, spellParams);
     }
 }
