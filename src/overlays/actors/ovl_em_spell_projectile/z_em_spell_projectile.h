@@ -7,6 +7,19 @@
 
 struct EmSpellProjectile;
 
+typedef enum EmSpellType {
+    EM_SPELL_SLOW_BALL,
+    EM_SPELL_BOLT,
+    EM_SPELL_LOBBED
+} EmSpellType;
+
+typedef enum EmSpellElement {
+    EM_ELEMENT_FIRE,
+    EM_ELEMENT_ICE,
+    EM_ELEMENT_ELECTRIC,
+    EM_ELEMENT_LIGHT
+} EmSpellElement;
+
 typedef void (*EmSpellProjectileActionFunc)(struct EmSpellProjectile*, struct PlayState*);
 
 typedef struct EmSpellProjectile {
@@ -19,19 +32,8 @@ typedef struct EmSpellProjectile {
     ColliderQuad collider;
     WeaponInfo weaponInfo;
     EmSpellProjectileActionFunc actionFunc;
+    EmSpellType spellType;
+    EmSpellElement spellElement;
 } EmSpellProjectile;
-
-typedef enum EmSpellType {
-    EM_SPELL_SLOW_BALL = (1 << 0),
-    EM_SPELL_BOLT = (1 << 1),
-    EM_SPELL_LOBBED = (1 << 2)
-} EmSpellType;
-
-typedef enum EmSpellElement {
-    EM_ELEMENT_FIRE = (1 << 0),
-    EM_ELEMENT_ICE = (1 << 1),
-    EM_ELEMENT_ELECTRIC = (1 << 2),
-    EM_ELEMENT_LIGHT = (1 << 3)
-} EmSpellElement;
 
 #endif

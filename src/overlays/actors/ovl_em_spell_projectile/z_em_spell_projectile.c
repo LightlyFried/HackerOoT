@@ -35,8 +35,7 @@ void EmSpellProjectile_Draw(Actor* thisx, PlayState* play);
 void EmSpellProjectile_SetupAction(EmSpellProjectile* this, EmSpellProjectileActionFunc actionFunc);
 void EmSpellProjectile_Shoot(EmSpellProjectile* this, PlayState* play);
 void EmSpellProjectile_Fly(EmSpellProjectile* this, PlayState* play);
-
-#pragma endregion
+#pragma endregion Forward Declarations
 
 //=======================[ STATIC DATA ]=====================//
 #pragma region Static Data
@@ -79,49 +78,38 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_F32(minVelocityY, -150, ICHAIN_STOP),
 };
 
-#pragma endregion
+#pragma endregion Static Data
 
 //==================[ LIFECYCLE FUNCTIONS ]==================//
 #pragma region Lifecycle Functions
 
 void EmSpellProjectile_Init(Actor* thisx, PlayState* play) {
     EmSpellProjectile* this = (EmSpellProjectile*)thisx;
-    
-    // Initialise trail effect maybe?
-    // Does this have to be done in init? Other statics are defined outside of the
-    // lifecycle functions. I think defining them here makes them static for this
-    // *instance* of this actor? Like in EnArrow certain elements of these statics
-    // are changed depending on the type of arrow spawned 
-    static EffectBlureInit2 blureNormal = {
-        0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
-        0, 1, 0, { 255, 255, 170, 255 }, { 0, 150, 0, 0 },
-    };
-    static EffectBlureInit2 blureFire = {
-        0, 4, 0, { 0, 255, 200, 255 }, { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
-        0, 1, 0, { 255, 200, 0, 255 }, { 255, 0, 0, 0 },
-    };
-    static EffectBlureInit2 blureIce = {
-        0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
-        0, 1, 0, { 170, 255, 255, 255 }, { 0, 100, 255, 0 },
-    };
-    static EffectBlureInit2 blureLight = {
-        0, 4, 0, { 0, 255, 200, 255 },   { 0, 255, 255, 255 }, { 0, 255, 200, 0 }, { 0, 255, 255, 0 }, 16,
-        0, 1, 0, { 255, 255, 170, 255 }, { 255, 255, 0, 0 },
-    };
+
+    // The spell type and element are u8s packed into the params s16
+    // Unpack the type by using a bitwise AND that masks only the lower 8 bits 
+    this->spellType = (this->actor.params & 0x00FF);
+    // Unpack the element by right shifting the higher 8 bits into place
+    this->spellElement = (this->actor.params >> 8);
 
     Actor_ProcessInitChain(&this->actor, sInitChain);
 
     // Process specific init stuff for each spell type here
-    /*if (this->actor.params == EM_SPELL_SLOW_BALL) {
-
-    }*/
+    // switch (this->spellType)
+    // {
+    //     case EM_SPELL_SLOW_BALL: // Nayru
+    //         break;
+    //     case EM_SPELL_BOLT: // Farore
+    //         break;
+    //     case EM_SPELL_LOBBED: // Din
+    //         break;
+    //     default:
+    //         break;
+    // }
+    this->collider.elem.atDmgInfo.dmgFlags = DMG_ARROW_NORMAL;
     
-    Effect_Add(play, &this->effectIndex, EFFECT_BLURE2, 0, 0, &blureNormal);
-
     Collider_InitQuad(play, &this->collider);
     Collider_SetQuad(play, &this->collider, &this->actor, &sColliderQuadInit);
-
-    this->collider.elem.atDmgInfo.dmgFlags = DMG_ARROW_NORMAL;
 
     EmSpellProjectile_SetupAction(this, EmSpellProjectile_Shoot);
 }
@@ -151,13 +139,14 @@ void EmSpellProjectile_Update(Actor* thisx, PlayState* play) {
 void EmSpellProjectile_Draw(Actor* thisx, PlayState* play) {
     EmSpellProjectile* this = (EmSpellProjectile*)thisx;
     Gfx_DrawDListOpa(play, gBombchuDL); // Draws a debug bombchu to make sure this works
-    
+
+    // Draw particle trail
 }
 
-#pragma endregion
+#pragma endregion Lifecycle Functions
 
-//====================[ CUSTOM FUNCTIONS ]===================//
-#pragma region Custom Functions
+//====================[ ACTION FUNCTIONS ]===================//
+#pragma region Action Functions
 
 void EmSpellProjectile_SetupAction(EmSpellProjectile* this, EmSpellProjectileActionFunc actionFunc) {
     this->actionFunc = actionFunc;
@@ -166,31 +155,30 @@ void EmSpellProjectile_SetupAction(EmSpellProjectile* this, EmSpellProjectileAct
 void EmSpellProjectile_Shoot(EmSpellProjectile* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
-    switch (this->actor.params)
+    switch (this->spellType)
     {
-    case EM_SPELL_SLOW_BALL: // Nayru
-        Player_PlaySfx(player, NA_SE_IT_EXPLOSION_ICE);
-        Actor_SetProjectileSpeed(&this->actor, 10.0f);
-        this->timer = 40;
-        break;
-    case EM_SPELL_BOLT: // Farore
-        Player_PlaySfx(player, NA_SE_IT_MAGIC_ARROW_SHOT);
-        Actor_SetProjectileSpeed(&this->actor, 60.0f);
-        this->timer = 15;
-        break;
-    case EM_SPELL_LOBBED: // Din
-        Player_PlaySfx(player, NA_SE_IT_EXPLOSION_LIGHT);
-        this->actor.velocity.y = 14.0f;
-        Actor_SetProjectileSpeed(&this->actor, 12.0f);
-        this->timer = 10;
-        break;
-    default:
-        break;
+        case EM_SPELL_SLOW_BALL: // Nayru
+            Player_PlaySfx(player, NA_SE_IT_EXPLOSION_ICE);
+            Actor_SetProjectileSpeed(&this->actor, 10.0f);
+            this->timer = 40;
+            break;
+        case EM_SPELL_BOLT: // Farore
+            Player_PlaySfx(player, NA_SE_IT_MAGIC_ARROW_SHOT);
+            Actor_SetProjectileSpeed(&this->actor, 60.0f);
+            this->timer = 15;
+            break;
+        case EM_SPELL_LOBBED: // Din
+            Player_PlaySfx(player, NA_SE_IT_EXPLOSION_LIGHT);
+            this->actor.velocity.y = 14.0f;
+            Actor_SetProjectileSpeed(&this->actor, 12.0f);
+            this->timer = 10;
+            break;
+        default:
+            break;
     }
 
     Math_Vec3f_Copy(&this->unk_210, &this->actor.world.pos);
     
-
     EmSpellProjectile_SetupAction(this, EmSpellProjectile_Fly);
 }
 
@@ -209,7 +197,7 @@ void EmSpellProjectile_Fly(EmSpellProjectile* this, PlayState* play) {
     }
 
     // For falloff
-    if (this->timer < 7.2000003f) {
+    if (this->timer < 7.2f && this->spellType != EM_SPELL_SLOW_BALL) {
         this->actor.gravity = -0.4f;
     }
 
@@ -234,37 +222,8 @@ void EmSpellProjectile_Fly(EmSpellProjectile* this, PlayState* play) {
     } else {
         Math_Vec3f_Copy(&this->unk_210, &this->actor.world.pos);
         Actor_MoveXZGravity(&this->actor);
-
     }
 
 }
 
-void EmSpellProjectile_DrawTrail(EmSpellProjectile* this, PlayState* play) {
-    static Vec3f sPosAOffset = { 0.0f, 400.0f, 1500.0f };
-    static Vec3f sPosBOffset = { 0.0f, -400.0f, 1500.0f };
-    static Vec3f D_809B4EA0 = { 0.0f, 0.0f, -300.0f };
-    Vec3f posA;
-    Vec3f posB;
-    s32 addBlureVertex;
-
-    if (this->actionFunc == EmSpellProjectile_Fly) {
-        Matrix_MultVec3f(&sPosAOffset, &posA);
-        Matrix_MultVec3f(&sPosBOffset, &posB);
-
-        if (this->hitActor == NULL) {
-            addBlureVertex &= Player_UpdateWeaponInfo(play, &this->collider, &this->weaponInfo, &posA, &posB);
-        } else if (addBlureVertex) {
-            if ((posA.x == this->weaponInfo.posA.x) && (posA.y == this->weaponInfo.posA.y) &&
-                (posA.z == this->weaponInfo.posA.z) && (posB.x == this->weaponInfo.posB.x) &&
-                (posB.y == this->weaponInfo.posB.y) && (posB.z == this->weaponInfo.posB.z)) {
-                addBlureVertex = false;
-            }
-        }
-
-        if (addBlureVertex) {
-            EffectBlure_AddVertex(Effect_GetByIndex(this->effectIndex), &posA, &posB);
-        }
-    }
-}
-
-#pragma endregion
+#pragma endregion Action Functions
