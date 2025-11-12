@@ -9,9 +9,14 @@
 //========================[ INCLUDES ]=======================//
 #pragma region Includes
 
+#include "gfx.h"
+#include "actor.h" // For defined PLACE_NAME_TEX_HEIGHT / _WIDTH values
 #include "printf.h"
 #include "play_state.h"
+#include "widescreen.h"
+#include "gfx_setupdl.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h" // Used to draw the debug Bombchu - remove after debugging
+
 
 #pragma endregion Includes
 
@@ -19,6 +24,10 @@
 #pragma region Static Data
 
 #define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
+
+u64 testTex[TEX_LEN(u64, PLACE_NAME_TEX_WIDTH, PLACE_NAME_TEX_HEIGHT, 8)] = {
+#include "assets/textures/place_title_cards/gWaterTempleTitleCardENGTex.ia8.inc.c"
+};
 
 #pragma endregion Static Data
 
@@ -71,6 +80,11 @@ void EmTitleCard_Init(Actor* thisx, PlayState* play) {
     this->subtitleTextureCtx.intensity = 0;
     //this->titleTextureCtx.alpha = this->subtitleTextureCtx.alpha = 0;
 
+    this->titleTextureCtx.width = PLACE_NAME_TEX_WIDTH;
+    this->titleTextureCtx.height = PLACE_NAME_TEX_HEIGHT;
+
+    this->titleTextureCtx.texture = testTex;
+
     this->titleTextureCtx.x = 50;
     this->titleTextureCtx.y = 50;
 
@@ -96,11 +110,29 @@ void EmTitleCard_Draw(Actor* thisx, PlayState* play) {
     EmTitleCard* this = (EmTitleCard*)thisx;
 
     if(this->titleTextureCtx.alpha > 0) {
-        //OPEN_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
+        
+        s32 doubleWidth = this->titleTextureCtx.width * 2;
+        s32 titleX1 = WIDE_INCR((this->titleTextureCtx.x * 4) - (this->titleTextureCtx.width * 2), (WIDE_GET_RATIO * 100.0f));
+        s32 titleX2 = titleX1 + (doubleWidth * 2) - 4;
+        s32 titleY1 = (this->titleTextureCtx.y * 4) - (this->titleTextureCtx.height * 2);
+        s32 titleY2 = titleY1 + (this->titleTextureCtx.height * 4);
+
+        OPEN_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
 
         // Draw the title
+        OVERLAY_DISP = Gfx_SetupDL_52NoCD(OVERLAY_DISP);
 
-        //CLOSE_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, (u8)this->titleTextureCtx.intensity, (u8)this->titleTextureCtx.intensity, (u8)this->titleTextureCtx.intensity,
+                        (u8)this->titleTextureCtx.alpha);
+
+        gDPLoadTextureBlock(OVERLAY_DISP++, (u8*)this->titleTextureCtx.texture, G_IM_FMT_IA, G_IM_SIZ_8b,
+                            this->titleTextureCtx.width, this->titleTextureCtx.height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK,
+                            G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+
+        gSPTextureRectangle(OVERLAY_DISP++, titleX1, titleY1, titleX2, titleY2 - 1, G_TX_RENDERTILE, 0, 0,
+                            WIDE_DIV((1 << 10), WIDE_GET_RATIO), 1 << 10);
+
+        CLOSE_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
     }
 }
 
