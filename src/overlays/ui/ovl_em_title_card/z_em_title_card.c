@@ -74,9 +74,9 @@ void EmTitleCard_Init(Actor* thisx, PlayState* play) {
     //    DMA_REQUEST_SYNC(this->titleTextureCtx.texture, loadedScene->titleFile.vromStart, size, __FILE__, __LINE__);
     //}
     
-    this->titleTextureCtx.alpha = 0;
+    this->titleTextureCtx.alpha = 255;
     this->subtitleTextureCtx.alpha = 0;
-    this->titleTextureCtx.intensity = 0;
+    this->titleTextureCtx.intensity = 255;
     this->subtitleTextureCtx.intensity = 0;
     //this->titleTextureCtx.alpha = this->subtitleTextureCtx.alpha = 0;
 
@@ -116,20 +116,20 @@ void EmTitleCard_Draw(Actor* thisx, PlayState* play) {
         s32 titleX2 = titleX1 + (doubleWidth * 2) - 4;
         s32 titleY1 = (this->titleTextureCtx.y * 4) - (this->titleTextureCtx.height * 2);
         s32 titleY2 = titleY1 + (this->titleTextureCtx.height * 4);
+        //s32 textureLanguageOffset = this->titleTextureCtx.width * this->titleTextureCtx.height;
 
         OPEN_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
 
         // Draw the title
         OVERLAY_DISP = Gfx_SetupDL_52NoCD(OVERLAY_DISP);
 
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, (u8)this->titleTextureCtx.intensity, (u8)this->titleTextureCtx.intensity, (u8)this->titleTextureCtx.intensity,
-                        (u8)this->titleTextureCtx.alpha);
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
 
         gDPLoadTextureBlock(OVERLAY_DISP++, (u8*)this->titleTextureCtx.texture, G_IM_FMT_IA, G_IM_SIZ_8b,
                             this->titleTextureCtx.width, this->titleTextureCtx.height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK,
                             G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
 
-        gSPTextureRectangle(OVERLAY_DISP++, titleX1, titleY1, titleX2, titleY2 - 1, G_TX_RENDERTILE, 0, 0,
+        gSPTextureRectangle(OVERLAY_DISP++, 0, 0, this->titleTextureCtx.width, this->titleTextureCtx.height - 1, G_TX_RENDERTILE, 0, 0,
                             WIDE_DIV((1 << 10), WIDE_GET_RATIO), 1 << 10);
 
         CLOSE_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
