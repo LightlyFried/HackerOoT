@@ -18,7 +18,6 @@
 #include "gfx_setupdl.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h" // Used to draw the debug Bombchu - remove after debugging
 
-
 #pragma endregion Includes
 
 //=======================[ STATIC DATA ]=====================//
@@ -28,8 +27,8 @@
 
 #define EM_TITLE_CARD_TITLE_WIDTH PLACE_NAME_TEX_WIDTH // 144
 #define EM_TITLE_CARD_TITLE_HEIGHT PLACE_NAME_TEX_HEIGHT // 24
-#define EM_TITLE_CARD_SUBTITLE_WIDTH PLACE_NAME_TEX_WIDTH // 144
-#define EM_TITLE_CARD_SUBTITLE_HEIGHT PLACE_NAME_TEX_HEIGHT // 24
+#define EM_TITLE_CARD_SUBTITLE_WIDTH 128
+#define EM_TITLE_CARD_SUBTITLE_HEIGHT 16
 #define EM_TITLE_CARD_DIVIDER_WIDTH 16
 #define EM_TITLE_CARD_DIVIDER_HEIGHT 16
 
@@ -47,8 +46,12 @@ static u64 sTestTex[TEX_LEN(u64, EM_TITLE_CARD_TITLE_WIDTH, EM_TITLE_CARD_TITLE_
 #include "assets/textures/place_title_cards/gWaterTempleTitleCardENGTex.ia8.inc.c"
 };
 
-u64 sDividerTex[TEX_LEN(u64, 8, 8, 8)] = {
+static u64 sDividerTex[TEX_LEN(u64, 8, 8, 8)] = {
 #include "assets/textures/parameter_static/gMagicMeterFillTex.ia8.inc.c"
+};
+
+static u64 sSubtitleTex[TEX_LEN(u64, 128, 16, 8)] = {
+#include "assets/textures/place_title_cards/gSampleSubtitle.ia8.inc.c"
 };
 
 #pragma endregion Static Data
@@ -64,7 +67,8 @@ void EmTitleCard_Draw(Actor* thisx, PlayState* play);
 void EmTitleCard_SetupAction(EmTitleCard* this, EmTitleCardActionFunc actionFunc);
 void EmTitleCard_ActionTitleEnter(EmTitleCard* this, PlayState* play);
 void EmTitleCard_ActionIdle(EmTitleCard* this, PlayState* play);
-void EmTitleCard_ActionSubtitleEnter(EmTitleCard* this, PlayState* play);
+void EmTitleCard_ActionSubtitleReveal(EmTitleCard* this, PlayState* play);
+void EmTitleCard_ActionSubtitleMove(EmTitleCard* this, PlayState* play);
 void EmTitleCard_ActionAllExit(EmTitleCard* this, PlayState* play);
 
 ActorProfile Em_Title_Card_Profile = {
@@ -109,7 +113,7 @@ void EmTitleCard_Init(Actor* thisx, PlayState* play) {
 
     this->titleTextureCtx.texture = sTestTex;
     this->dividerTextureCtx.texture = sDividerTex;
-    this->subtitleTextureCtx.texture = sTestTex;
+    this->subtitleTextureCtx.texture = sSubtitleTex;
 
     // Set the textures' initial screenpos rects
     s32 doubleWidth = this->titleTextureCtx.width * 2;
@@ -237,19 +241,34 @@ void EmTitleCard_ActionTitleEnter(EmTitleCard* this, PlayState* play) {
         this->dividerTextureCtx.x1 = this->titleTextureCtx.x1;
         this->dividerTextureCtx.x2 = this->titleTextureCtx.x2;
 
-        this->keyframeCountdown = EM_TITLE_CARD_SUBTITLE_HEIGHT;
-        this->actionFunc = EmTitleCard_ActionSubtitleEnter;
+        this->keyframeCountdown = EM_TITLE_CARD_SUBTITLE_HEIGHT * 2;
+        this->actionFunc = EmTitleCard_ActionSubtitleReveal;
     }
 }
 
-void EmTitleCard_ActionSubtitleEnter(EmTitleCard* this, PlayState* play) {
+void EmTitleCard_ActionSubtitleReveal(EmTitleCard* this, PlayState* play) {
     if(DECR(this->keyframeCountdown)) {
-        //Math_StepToS(&this->subtitleTextureCtx.y, EM_TITLE_CARD_TITLE_HEIGHT, 1);
-        Math_StepToS(&this->subtitleCurrentHeight, EM_TITLE_CARD_SUBTITLE_HEIGHT, 1);
+        if(this->keyframeCountdown % 2 == 0) {
+            Math_StepToS(&this->subtitleCurrentHeight, EM_TITLE_CARD_SUBTITLE_HEIGHT, 1);
+        }
     } else {
         this->subtitleCurrentHeight = EM_TITLE_CARD_SUBTITLE_HEIGHT;
 
-        this->keyframeCountdown = 60;
+        this->keyframeCountdown = 32;
+        this->actionFunc = EmTitleCard_ActionSubtitleMove;
+    }
+}
+
+void EmTitleCard_ActionSubtitleMove(EmTitleCard* this, PlayState* play) {
+    if(DECR(this->keyframeCountdown)) {
+        if(this->keyframeCountdown % 2 == 0) {
+            this->subtitleTextureCtx.y1 += 4;
+            this->subtitleTextureCtx.y2 += 4;
+        }
+    } else {
+        //this->subtitleCurrentHeight = EM_TITLE_CARD_SUBTITLE_HEIGHT;
+
+        this->keyframeCountdown = 40;
         this->actionFunc = EmTitleCard_ActionIdle;
     }
 }
