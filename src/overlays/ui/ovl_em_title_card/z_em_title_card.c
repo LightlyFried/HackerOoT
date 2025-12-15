@@ -134,7 +134,7 @@ void EmTitleCard_Init(Actor* thisx, PlayState* play) {
 
     this->subtitleCurrentHeight = 0;
 
-    this->keyframeCountdown = 80;
+    this->keyframeCountdown = 60;
     this->actionFunc = EmTitleCard_ActionTitleEnter;
 }
 
@@ -241,7 +241,7 @@ void EmTitleCard_ActionTitleEnter(EmTitleCard* this, PlayState* play) {
         this->dividerTextureCtx.x1 = this->titleTextureCtx.x1;
         this->dividerTextureCtx.x2 = this->titleTextureCtx.x2;
 
-        this->keyframeCountdown = EM_TITLE_CARD_SUBTITLE_HEIGHT * 2;
+        this->keyframeCountdown = 32;
         this->actionFunc = EmTitleCard_ActionSubtitleReveal;
     }
 }
