@@ -3570,7 +3570,11 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 // TEMP FOR MAGIC SPELLS
                 EmPlayer_TryCastSpell(this, play, EM_SPELL_LOBBED);
 
-            } else if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
+            } /*else if (itemAction == PLAYER_IA_DINS_FIRE) { // TITLE CARD DEBUG
+                // Debug IA for spawning title card
+                Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EM_TITLE_CARD, this->actor.world.pos.x,
+                           this->actor.world.pos.y, this->actor.world.pos.z, 0, this->actor.shape.rot.y, 0, 0);
+            }*/ else if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
                 // Handle Lens of Truth
                 if (Magic_RequestChange(play, 0, MAGIC_CONSUME_LENS)) {
                     if (play->actorCtx.lensActive) {
