@@ -1,1 +1,5 @@
-#include "ultra64.h"
+#include "{objectSpec}.h"
+
+Gfx g{actorSpec}DL[] = {
+    gsSPEndDisplayList(),
+};

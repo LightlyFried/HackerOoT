@@ -428,6 +428,10 @@ void Attention_Draw(Attention* attention, PlayState* play) {
 
         Actor_ProjectPos(play, &attention->reticlePos, &projectedPos, &invW);
 
+        if (USE_WIDESCREEN) {
+            projectedPos.x /= (0.75f);
+        }
+
         projectedPos.x = ((SCREEN_WIDTH / 2) * (projectedPos.x * invW)) * projectdPosScale;
         projectedPos.x = CLAMP(projectedPos.x, -SCREEN_WIDTH, SCREEN_WIDTH);
 
@@ -979,6 +983,12 @@ void Actor_Destroy(Actor* actor, PlayState* play) {
         PRINTF(T("Ａｃｔｏｒクラス デストラクトがありません [%s]\n", "No Actor class destruct [%s]\n") ACTOR_RST, name);
 #endif
     }
+
+#if ENABLE_ANIMATED_MATERIALS
+    if (actor->animMatCtx.stateList != NULL) {
+        SYSTEM_ARENA_FREE(actor->animMatCtx.stateList);
+    }
+#endif
 }
 
 /**
@@ -2479,10 +2489,20 @@ void Actor_UpdateAll(PlayState* play, ActorContext* actorCtx) {
             } else if (!Object_IsLoaded(&play->objectCtx, actor->objectSlot)) {
                 Actor_Kill(actor);
                 actor = actor->next;
-            } else if ((freezeExceptionFlag != 0 && !(actor->flags & freezeExceptionFlag)) ||
-                       (freezeExceptionFlag == 0 && canFreezeCategory &&
-                        !((sp74 == actor) || (player->naviActor == actor) || (player->heldActor == actor) ||
-                          (actor->parent == &player->actor)))) {
+            } else if
+#if ENABLE_CUTSCENE_IMPROVEMENTS
+                ((freezeExceptionFlag && !(actor->flags & freezeExceptionFlag)) ||
+                 ((!freezeExceptionFlag) && (!(actor->flags & ACTOR_FLAG_FREEZE_EXCEPTION)) && canFreezeCategory &&
+                  (actor != sp74) && (actor != player->heldActor) && (actor != player->naviActor) &&
+                  (actor->parent != &player->actor)))
+
+#else
+                ((freezeExceptionFlag != 0 && !(actor->flags & freezeExceptionFlag)) ||
+                 (freezeExceptionFlag == 0 && canFreezeCategory &&
+                  !((sp74 == actor) || (player->naviActor == actor) || (player->heldActor == actor) ||
+                    (actor->parent == &player->actor))))
+#endif
+            {
                 CollisionCheck_ResetDamage(&actor->colChkInfo);
                 actor = actor->next;
             } else if (actor->update == NULL) {

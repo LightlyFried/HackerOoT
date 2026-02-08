@@ -178,6 +178,17 @@ def list_files_to_format():
         if file in files:
             files.remove(file)
 
+    # Do not format F3DEX3's gbi.h
+    for file in glob.glob("include/ultra64/*.h", recursive=True):
+        if file in files and "gbi.f3dex3.h" in file:
+            files.remove(file)
+            break
+        
+    # Do not format assets/**/*.inc.c files
+    for file in glob.glob("assets/**/*.inc.c", recursive=True):
+        if file in files:
+            files.remove(file)
+
     return files, extra_files
 
 

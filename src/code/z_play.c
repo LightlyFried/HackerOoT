@@ -50,6 +50,7 @@
 #include "occlusionplanes.h"
 #include "libu64/gfxprint.h"
 #include "debug.h"
+#include "animated_materials.h"
 
 #if CAN_INCLUDE_EXAMPLE_SCENE
 #include "assets/scenes/example/example_scene.h"
@@ -75,6 +76,22 @@ UNK_TYPE D_8012D1F4 = 0; // unused
 #endif
 
 Input* D_8012D1F8 = NULL;
+
+#if ENABLE_MM_TITLE_CARDS
+// default title card info to use if there's no entry in the scene
+static TitleCardInfo sDefaultTitleCard = {
+    .textId = 0x9000,
+    .rgba = { 140, 40, 160, 255 },
+    .nextHudVisibility = HUD_VISIBILITY_NOTHING,
+    .duration = 30,
+    .textDelayTimer = 0,
+    .textPos = { TC_TEXT_POS_X, TC_TEXT_POS_Y },
+    .gradientWidth = TC_GRADIENT_WIDTH,
+    .gradientHeight = TC_GRADIENT_HEIGHT,
+    .alphaFadeOutIncr = TC_ALPHA_FADE_OUT_INCR,
+    .alphaFadeInIncr = TC_ALPHA_FADE_IN_INCR,
+};
+#endif
 
 void Play_SpawnScene(PlayState* this, s32 sceneId, s32 spawn);
 
@@ -253,6 +270,16 @@ void Play_Destroy(GameState* thisx) {
     this->state.gfxCtx->callback = NULL;
     this->state.gfxCtx->callbackParam = NULL;
 
+#if ENABLE_ANIMATED_MATERIALS
+    if (this->sceneAnimMatCtx.stateList != NULL) {
+        SYSTEM_ARENA_FREE(this->sceneAnimMatCtx.stateList);
+    }
+
+    if (this->sceneAnimMatPolyCtx.polyBackupList != NULL) {
+        SYSTEM_ARENA_FREE(this->sceneAnimMatPolyCtx.polyBackupList);
+    }
+#endif
+
 #if IS_MOTION_BLUR_ENABLED
     Play_DestroyMotionBlur();
 #endif
@@ -319,7 +346,13 @@ void Play_Init(GameState* thisx) {
 
 #if ENABLE_HACKER_DEBUG
     gDebug.play = this;
+    gDebug.invDebug.state = INVEDITOR_STATE_OFF;
+    gDebug.invDebug.gfxCtx = this->state.gfxCtx;
+    gDebug.invDebug.pauseCtx = &this->pauseCtx;
+    gDebug.invDebug.elementsAlpha = 255;
 #endif
+
+    gSaveContext.showTitleCard = true;
 
     if (gSaveContext.save.entranceIndex == ENTR_LOAD_OPENING) {
         gSaveContext.save.entranceIndex = 0;
@@ -1859,6 +1892,9 @@ void Play_InitScene(PlayState* this, s32 spawn) {
 
 #if ENABLE_ANIMATED_MATERIALS
     this->sceneMaterialAnims = NULL;
+    this->sceneMaterialAnimCamParams = MATERIAL_CAM_PARAMS(ANIM_MAT_CAMERA_TYPE_NONE, false);
+    this->sceneAnimMatCtx.stateList = NULL;
+    this->sceneAnimMatPolyCtx.polyBackupList = NULL;
 #endif
 
 #if ENABLE_CUTSCENE_IMPROVEMENTS
@@ -1875,6 +1911,10 @@ void Play_InitScene(PlayState* this, s32 spawn) {
     gSaveContext.worldMapArea = WORLD_MAP_AREA_HYRULE_FIELD;
     Scene_ExecuteCommands(this, this->sceneSegment);
     Play_InitEnvironment(this, this->skyboxId);
+
+#if ENABLE_ANIMATED_MATERIALS
+    AnimatedMat_Init(&this->state, &this->sceneAnimMatCtx, &this->sceneAnimMatPolyCtx, this->sceneMaterialAnims);
+#endif
 }
 
 void Play_SpawnScene(PlayState* this, s32 sceneId, s32 spawn) {
@@ -1898,6 +1938,10 @@ void Play_SpawnScene(PlayState* this, s32 sceneId, s32 spawn) {
     this->sceneDrawConfig = scene->drawConfig;
 
     PRINTF("\nSCENE SIZE %fK\n", (scene->sceneFile.vromEnd - scene->sceneFile.vromStart) / 1024.0f);
+
+#if ENABLE_MM_TITLE_CARDS
+    this->msgCtx.titleCardInfo = &sDefaultTitleCard;
+#endif
 
 #if PLATFORM_N64
     if ((B_80121220 != NULL) && (scene->unk_12 > 0)) {

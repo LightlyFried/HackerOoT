@@ -9,6 +9,7 @@
 #include "z_math.h"
 #include "path.h"
 #include "config.h"
+#include "color.h"
 
 #include "command_macros_base.h"
 
@@ -235,9 +236,9 @@ typedef struct SCmdOccPlaneCandList {
 #endif
 
 #if ENABLE_ANIMATED_MATERIALS
-typedef struct {
+typedef struct SCmdTextureAnimations {
     /* 0x0 */ u8  code;
-    /* 0x1 */ u8  data1;
+    /* 0x2 */ u8 camParams;
     /* 0x4 */ void* segment;
 } SCmdTextureAnimations; // size = 0x8
 #endif
@@ -260,6 +261,27 @@ typedef struct {
     /* 0x2 */ s16 count;
     /* 0x4 */ Vec3s* actorCsCamFuncData; // s16 data grouped in threes
 } ActorCsCamInfo; // size = 0x8
+#endif
+
+#if ENABLE_MM_TITLE_CARDS
+typedef struct SCmdTitleCard {
+    /* 0x0 */ u8 code;
+    /* 0x1 */ u8 data1;
+    /* 0x4 */ void* segment;
+} SCmdTitleCard; // size = 0x8
+
+typedef struct TitleCardInfo {
+    u16 textId;
+    Color_RGBA8 rgba; // MM default: R: 140, G: 40, B: 160, A: 255
+    u8 nextHudVisibility;
+    u8 duration; // MM default: 30
+    u8 textDelayTimer; // MM default: 0
+    Vec2s textPos; // HackerOoT default: X: 25, Y: 67
+    u8 gradientWidth; // HackerOoT default: 60
+    u8 gradientHeight; // HackerOoT default: 28
+    u8 alphaFadeOutIncr; // HackerOoT default: -40
+    u8 alphaFadeInIncr; // HackerOoT default: 30
+} TitleCardInfo;
 #endif
 
 typedef union SceneCmd {
@@ -298,6 +320,9 @@ typedef union SceneCmd {
 #if ENABLE_CUTSCENE_IMPROVEMENTS
     SCmdCsCameraList actorCsCamList;
     SCmdCutsceneList cutsceneList;
+#endif
+#if ENABLE_MM_TITLE_CARDS
+    SCmdTitleCard titleCard;
 #endif
 } SceneCmd; // size = 0x8
 
@@ -451,13 +476,13 @@ typedef enum NaviQuestHintFileId {
 // Scene commands
 
 typedef enum SceneCommandTypeID {
-    /* 0x00 */ SCENE_CMD_ID_SPAWN_LIST,
+    /* 0x00 */ SCENE_CMD_ID_PLAYER_ENTRY_LIST,
     /* 0x01 */ SCENE_CMD_ID_ACTOR_LIST,
     /* 0x02 */ SCENE_CMD_ID_UNUSED_2,
     /* 0x03 */ SCENE_CMD_ID_COLLISION_HEADER,
     /* 0x04 */ SCENE_CMD_ID_ROOM_LIST,
     /* 0x05 */ SCENE_CMD_ID_WIND_SETTINGS,
-    /* 0x06 */ SCENE_CMD_ID_ENTRANCE_LIST,
+    /* 0x06 */ SCENE_CMD_ID_SPAWN_LIST,
     /* 0x07 */ SCENE_CMD_ID_SPECIAL_FILES,
     /* 0x08 */ SCENE_CMD_ID_ROOM_BEHAVIOR,
     /* 0x09 */ SCENE_CMD_ID_UNDEFINED_9,
@@ -487,11 +512,14 @@ typedef enum SceneCommandTypeID {
                SCENE_CMD_ID_ACTOR_CUTSCENE_LIST,
                SCENE_CMD_ID_ACTOR_CUTSCENE_CAM_LIST,
 #endif
+#if ENABLE_MM_TITLE_CARDS
+               SCENE_CMD_ID_TITLE_CARD,
+#endif
     /* 0x1A */ SCENE_CMD_ID_MAX
 } SceneCommandTypeID;
 
-#define SCENE_CMD_SPAWN_LIST(numSpawns, spawnList) \
-    { SCENE_CMD_ID_SPAWN_LIST, numSpawns, CMD_PTR(spawnList) }
+#define SCENE_CMD_PLAYER_ENTRY_LIST(length, playerEntryList) \
+    { SCENE_CMD_ID_PLAYER_ENTRY_LIST, length, CMD_PTR(playerEntryList) }
 
 #define SCENE_CMD_ACTOR_LIST(numActors, actorList) \
     { SCENE_CMD_ID_ACTOR_LIST, numActors, CMD_PTR(actorList) }
@@ -508,8 +536,8 @@ typedef enum SceneCommandTypeID {
 #define SCENE_CMD_WIND_SETTINGS(xDir, yDir, zDir, strength) \
     { SCENE_CMD_ID_WIND_SETTINGS, 0, CMD_BBBB(xDir, yDir, zDir, strength) }
 
-#define SCENE_CMD_ENTRANCE_LIST(entranceList) \
-    { SCENE_CMD_ID_ENTRANCE_LIST, 0, CMD_PTR(entranceList) }
+#define SCENE_CMD_SPAWN_LIST(spawnList) \
+    { SCENE_CMD_ID_SPAWN_LIST, 0, CMD_PTR(spawnList) }
 
 #define SCENE_CMD_SPECIAL_FILES(naviQuestHintFileId, keepObjectId) \
     { SCENE_CMD_ID_SPECIAL_FILES, naviQuestHintFileId, CMD_W(keepObjectId) }
@@ -575,8 +603,8 @@ typedef enum SceneCommandTypeID {
 #endif
 
 #if ENABLE_ANIMATED_MATERIALS
-#define SCENE_CMD_ANIMATED_MATERIAL_LIST(matAnimList) \
-    { SCENE_CMD_ID_ANIMATED_MATERIAL_LIST, 0, CMD_PTR(matAnimList) }
+#define SCENE_CMD_ANIMATED_MATERIAL_LIST(matAnimList, camParams) \
+    { SCENE_CMD_ID_ANIMATED_MATERIAL_LIST, camParams, CMD_PTR(matAnimList) }
 #endif
 
 #if ENABLE_CUTSCENE_IMPROVEMENTS
@@ -585,6 +613,11 @@ typedef enum SceneCommandTypeID {
 
 #define SCENE_CMD_ACTOR_CUTSCENE_CAM_LIST(numCams, camList) \
     { SCENE_CMD_ID_ACTOR_CUTSCENE_CAM_LIST, numCams, CMD_PTR(camList) }
+#endif
+
+#if ENABLE_MM_TITLE_CARDS
+#define SCENE_CMD_TITLE_CARD(titleCardInfo) \
+    { SCENE_CMD_ID_TITLE_CARD, 0, CMD_PTR(titleCardInfo) }
 #endif
 
 
