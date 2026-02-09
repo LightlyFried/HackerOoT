@@ -1769,7 +1769,7 @@ void Play_Main(GameState* thisx) {
         R_PLAY_INIT = HREG_MODE_PLAY;
     }
 
-    if (false) {
+    if (CHECK_BTN_ALL(this->state.input[0].cur.button, BTN_L)) {
         // [UI-REWRITE] Hook for exclusive UI update
     } else if (!DEBUG_FEATURES || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_RUN_UPDATE) {
         Play_Update(this);
@@ -1777,7 +1777,7 @@ void Play_Main(GameState* thisx) {
 
     PLAY_LOG(4583);
 
-    if (false) {
+    if (CHECK_BTN_ALL(this->state.input[0].cur.button, BTN_L)) {
         // [UI-REWRITE] Hook for exclusive UI draw
     } else {
         Play_Draw(this);
