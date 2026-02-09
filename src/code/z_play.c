@@ -1258,19 +1258,26 @@ void Play_DrawOverlayElements(PlayState* this) {
 #if PLATFORM_N64
     s32 pad;
 #endif
-
-    if (IS_PAUSED(&this->pauseCtx)) {
-        KaleidoScopeCall_Draw(this);
-    }
-
-    if (gSaveContext.gameMode == GAMEMODE_NORMAL) {
-        Interface_Draw(this);
-    }
-
-    Message_Draw(this);
-
-    if (this->gameOverCtx.state != GAMEOVER_INACTIVE) {
-        GameOver_FadeInLights(this);
+    // [UI-REWRITE] Draw exclusive UI here for now; this doesn't skip regular drawing
+    // so exclusive drawing needs to be moved later, with *non*exclusive drawing being
+    // left in here or in `Interface_Draw()`
+    if(this->uiCtx.isModalActive) {
+        
+    } else {
+        
+        if (IS_PAUSED(&this->pauseCtx)) {
+            KaleidoScopeCall_Draw(this);
+        }
+        
+        if (gSaveContext.gameMode == GAMEMODE_NORMAL) {
+            Interface_Draw(this);
+        }
+        
+        Message_Draw(this);
+        
+        if (this->gameOverCtx.state != GAMEOVER_INACTIVE) {
+            GameOver_FadeInLights(this);
+        }
     }
 }
 
