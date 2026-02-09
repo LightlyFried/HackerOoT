@@ -1769,13 +1769,19 @@ void Play_Main(GameState* thisx) {
         R_PLAY_INIT = HREG_MODE_PLAY;
     }
 
-    if (!DEBUG_FEATURES || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_RUN_UPDATE) {
+    if (false) {
+        // [UI-REWRITE] Hook for exclusive UI update
+    } else if (!DEBUG_FEATURES || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_RUN_UPDATE) {
         Play_Update(this);
     }
 
     PLAY_LOG(4583);
 
-    Play_Draw(this);
+    if (false) {
+        // [UI-REWRITE] Hook for exclusive UI draw
+    } else {
+        Play_Draw(this);
+    }
 
     PLAY_LOG(4587);
 
