@@ -28,6 +28,8 @@
 #include "animated_materials.h"
 #include "config.h"
 
+#include "ui_context.h"
+
 union Color_RGBA8_u32;
 struct Path;
 struct Player;
@@ -137,6 +139,7 @@ typedef struct PlayState {
     ActorCsCamInfo* actorCsCamList;
     u8 actorCsUsed;
 #endif
+    /* [UI-RW] */ UIContext uiCtx;
 } PlayState; // size = 0x12518
 
 extern Mtx D_01000000; // billboardMtx

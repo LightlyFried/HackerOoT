@@ -1,6 +1,2 @@
 # HackerOoT UI Rewrite Project
 My attempt at making a generic UI system that mirrors the current Actor system's design. The current goal is to build something **alongside** the existing game's UI rather than replace everything wholesale as doing so would significantly change the base repo.
-This document will be updated with which files I change, so people less familiar with Git (like me) can manually import the system into their projects.
-
-## Changed Files
-- `src/code/z_play.c` - Added hooks for exclusive UI updates/draws in `Play_Main()`

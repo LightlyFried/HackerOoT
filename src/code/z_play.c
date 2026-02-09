@@ -673,7 +673,10 @@ void Play_Update(PlayState* this) {
 #define FRAMEADVANCE_CAN_UPDATE true
 #endif
 
-    if (FRAMEADVANCE_CAN_UPDATE) {
+    if (this->uiCtx.isModalActive) {
+        // [UI-REWRITE] Exclusive UI update
+        
+    } else if (FRAMEADVANCE_CAN_UPDATE) {
         if ((this->transitionMode == TRANS_MODE_OFF) && (this->transitionTrigger != TRANS_TRIGGER_OFF)) {
             this->transitionMode = TRANS_MODE_SETUP;
         }
@@ -1769,19 +1772,20 @@ void Play_Main(GameState* thisx) {
         R_PLAY_INIT = HREG_MODE_PLAY;
     }
 
-    if (CHECK_BTN_ALL(this->state.input[0].cur.button, BTN_L)) {
-        // [UI-REWRITE] Hook for exclusive UI update
-    } else if (!DEBUG_FEATURES || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_RUN_UPDATE) {
+    // [UI-REWRITE] Hook for toggling exclusive UI update/draw
+    if (CHECK_BTN_ALL(this->state.input[0].press.button, BTN_L)) {
+        // Toggle the modal UI mode when L is pressed. This will be used in the update & draw functions
+        // to discard updates/draws of elements hidden by the modal
+        this->uiCtx.isModalActive = !this->uiCtx.isModalActive;
+    }
+
+    if (!DEBUG_FEATURES || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_RUN_UPDATE) {
         Play_Update(this);
     }
 
     PLAY_LOG(4583);
 
-    if (CHECK_BTN_ALL(this->state.input[0].cur.button, BTN_L)) {
-        // [UI-REWRITE] Hook for exclusive UI draw
-    } else {
-        Play_Draw(this);
-    }
+    Play_Draw(this);
 
     PLAY_LOG(4587);
 
