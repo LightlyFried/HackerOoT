@@ -1145,6 +1145,12 @@ endseg
 #endif
 
 beginseg
+    name "ovl_TempUiScreen"
+    include "$(BUILD_DIR)/src/overlays/actors/ovl_TempUiScreen/z_tempuiscreen.o"
+    include "$(BUILD_DIR)/src/overlays/actors/ovl_TempUiScreen/ovl_TempUiScreen_reloc.o"
+endseg
+
+beginseg
     name "gameplay_keep"
     compress
     romalign 0x1000

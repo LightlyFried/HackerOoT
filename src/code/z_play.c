@@ -56,6 +56,9 @@
 #include "assets/scenes/example/example_scene.h"
 #endif
 
+// [UI-REWRITE] Temp hardcoded UI screen
+#include "src/overlays/actors/ovl_TempUiScreen/z_tempuiscreen.h"
+
 #pragma increment_block_number "gc-eu:224 gc-eu-mq:224 gc-jp:224 gc-jp-ce:224 gc-jp-mq:224 gc-us:224 gc-us-mq:224" \
                                "ique-cn:224 ntsc-1.0:240 ntsc-1.1:240 ntsc-1.2:240 pal-1.0:240 pal-1.1:240"
 
@@ -1262,7 +1265,8 @@ void Play_DrawOverlayElements(PlayState* this) {
     // so exclusive drawing needs to be moved later, with *non*exclusive drawing being
     // left in here or in `Interface_Draw()`
     if(this->uiCtx.isModalActive) {
-        
+        //UiDebugScreen_Draw(this);
+        IDontFuckinKnowDude(this);
     } else {
         
         if (IS_PAUSED(&this->pauseCtx)) {
