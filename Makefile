@@ -595,6 +595,10 @@ distclean:
 	$(V)$(RM) -r F3DEX3/*/*.code F3DEX3/*/*.data
 	$(call print_no_args,Success!)
 
+textclean:
+	$(V)$(RM) -r $(BUILD_DIR)/assets/text/*
+	$(call print_no_args,Success!)
+
 venv:
 # Create the virtual environment if it doesn't exist.
 # Delete the virtual environment directory if creation fails.
