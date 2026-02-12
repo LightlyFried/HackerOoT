@@ -1145,9 +1145,10 @@ endseg
 #endif
 
 beginseg
-    name "ovl_TempUiScreen"
-    include "$(BUILD_DIR)/src/overlays/actors/ovl_TempUiScreen/z_tempuiscreen.o"
-    include "$(BUILD_DIR)/src/overlays/actors/ovl_TempUiScreen/ovl_TempUiScreen_reloc.o"
+    name "ovl_Em_Title_Card"
+    compress
+    include "$(BUILD_DIR)/src/overlays/ui/ovl_em_title_card/z_em_title_card.o"
+    include "$(BUILD_DIR)/src/overlays/ui/ovl_em_title_card/ovl_Em_Title_Card_reloc.o"
 endseg
 
 beginseg
