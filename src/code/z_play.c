@@ -675,7 +675,7 @@ void Play_Update(PlayState* this) {
 
     if (this->uiCtx.isModalActive) {
         // [UI-REWRITE] Exclusive UI update
-        
+        this->uiCtx.currentModal->update(this->uiCtx.currentModal, this);
     } else if (FRAMEADVANCE_CAN_UPDATE) {
         if ((this->transitionMode == TRANS_MODE_OFF) && (this->transitionTrigger != TRANS_TRIGGER_OFF)) {
             this->transitionMode = TRANS_MODE_SETUP;
@@ -1261,8 +1261,8 @@ void Play_DrawOverlayElements(PlayState* this) {
     // [UI-REWRITE] Draw exclusive UI here for now; this doesn't skip regular drawing
     // so exclusive drawing needs to be moved later, with *non*exclusive drawing being
     // left in here or in `Interface_Draw()`
-    if(this->uiCtx.isModalActive) {
-        //UiDebugScreen_Draw(this);
+    if(this->uiCtx.isModalActive && this->uiCtx.currentModal != NULL) {
+        this->uiCtx.currentModal->draw(this->uiCtx.currentModal, this);
     } else {
         
         if (IS_PAUSED(&this->pauseCtx)) {
@@ -1784,6 +1784,21 @@ void Play_Main(GameState* thisx) {
         // Toggle the modal UI mode when L is pressed. This will be used in the update & draw functions
         // to discard updates/draws of elements hidden by the modal
         this->uiCtx.isModalActive = !this->uiCtx.isModalActive;
+        if(this->uiCtx.isModalActive == 1) {
+            if(this->uiCtx.currentModal == NULL) {
+                this->uiCtx.currentModal = Actor_Spawn(&this->actorCtx, this, ACTOR_UI_SAMPLE_SCREEN, 0, 0, 0, 0, 0, 0, 0);
+            } else {
+                // Already exists, re-initialise?
+                PRINTF("Sample screen already exists, re-initialise?\n");
+            }
+        } else {
+            if(this->uiCtx.currentModal != NULL) {
+                Actor_Delete(&this->actorCtx, this->uiCtx.currentModal, this);
+                this->uiCtx.currentModal = NULL;
+            } else {
+                PRINTF("Attempting to destroy sample screen, but it's already null?\n");
+            }
+        }
     }
 
     if (!DEBUG_FEATURES || (R_HREG_MODE != HREG_MODE_PLAY) || R_PLAY_RUN_UPDATE) {

@@ -5,6 +5,7 @@
 
 typedef struct UIContext {
     u8 isModalActive; // Whether a full-screen modal is intercepting the game's update/draw calls
+    Actor* currentModal;
 } UIContext;
 
 #endif
